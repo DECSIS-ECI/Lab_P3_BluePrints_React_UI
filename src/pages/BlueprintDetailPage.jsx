@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { fetchBlueprint } from '../features/blueprints/blueprintsSlice.js'
+import BlueprintCanvas from '../components/BlueprintCanvas.jsx'
 
 export default function BlueprintDetailPage() {
   const { author, name } = useParams()
@@ -28,11 +29,16 @@ export default function BlueprintDetailPage() {
       <p>
         <strong>Puntos:</strong> {bp.points?.length || 0}
       </p>
-      <svg width="400" height="200" style={{ background: '#0b1220', borderRadius: 12 }}>
-        {bp.points?.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r="4" />
-        ))}
-      </svg>
+
+      <div>
+        <h3>Mapa</h3>
+        <BlueprintCanvas
+          points={bp.points || []}
+          width={520}
+          height={360}
+          id="blueprint-canvas-detalle"
+        />
+      </div>
     </div>
   )
 }
