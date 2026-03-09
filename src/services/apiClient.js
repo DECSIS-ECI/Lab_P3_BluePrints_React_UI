@@ -3,8 +3,8 @@ import axios from 'axios';
 // Creamos la instancia de Axios
 const api = axios.create({
   // Prioriza la URL del .env, si no existe usa la de localhost por defecto
-  // Eliminamos el '/api' del final para que coincida con tu @RequestMapping("/auth")
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  // Incluye /api/v1 para coincidir con @RequestMapping del backend
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1',
   timeout: 8000,
   headers: {
     'Content-Type': 'application/json',
