@@ -1,13 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import api from '../../services/apiClient'
+import blueprintsService from '../../services/blueprintsService.js'
 
 // Async thunks
 export const fetchAuthors = createAsyncThunk(
   'blueprints/fetchAuthors',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get('/blueprints')
-      return response.data.data || []
+      return await blueprintsService.getAll()
     } catch (error) {
       if (error.response?.status === 401) {
         return rejectWithValue('Sesión expirada. Por favor inicia sesión nuevamente')
@@ -21,8 +20,8 @@ export const fetchByAuthor = createAsyncThunk(
   'blueprints/fetchByAuthor',
   async (author, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/blueprints/${author}`)
-      return { author, blueprints: response.data.data || [] }
+      const blueprints = await blueprintsService.getByAuthor(author)
+      return { author, blueprints }
     } catch (error) {
       if (error.response?.status === 401) {
         return rejectWithValue('Sesión expirada. Por favor inicia sesión nuevamente')
@@ -39,8 +38,7 @@ export const fetchBlueprint = createAsyncThunk(
   'blueprints/fetchBlueprint',
   async ({ author, name }, { rejectWithValue }) => {
     try {
-      const response = await api.get(`/blueprints/${author}/${name}`)
-      return response.data.data
+      return await blueprintsService.getByAuthorAndName(author, name)
     } catch (error) {
       if (error.response?.status === 401) {
         return rejectWithValue('Sesión expirada. Por favor inicia sesión nuevamente')
