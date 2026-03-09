@@ -20,19 +20,21 @@ export const fetchByAuthor = createAsyncThunk(
   'blueprints/fetchByAuthor',
   async (author, { rejectWithValue }) => {
     try {
-      const blueprints = await blueprintsService.getByAuthor(author)
-      return { author, blueprints }
+      // Delay artificial para probar loading
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const blueprints = await blueprintsService.getByAuthor(author);
+      return { author, blueprints };
     } catch (error) {
       if (error.response?.status === 401) {
-        return rejectWithValue('Sesión expirada. Por favor inicia sesión nuevamente')
+        return rejectWithValue('Sesión expirada. Por favor inicia sesión nuevamente');
       }
       if (error.response?.status === 404) {
-        return rejectWithValue(`No se encontraron planos para el autor: ${author}`)
+        return rejectWithValue(`No se encontraron planos para el autor: ${author}`);
       }
-      return rejectWithValue(error.response?.data?.message || 'Error al cargar blueprints')
+      return rejectWithValue(error.response?.data?.message || 'Error al cargar blueprints');
     }
   }
-)
+);
 
 export const fetchBlueprint = createAsyncThunk(
   'blueprints/fetchBlueprint',
@@ -62,6 +64,9 @@ const blueprintsSlice = createSlice({
     error: null
   },
   reducers: {
+      setPlanoActual(state, action) {
+        state.planoActual = action.payload;
+      },
     clearError: (state) => {
       state.error = null
     },
@@ -69,6 +74,15 @@ const blueprintsSlice = createSlice({
       state.current = null
     }
   },
+    // Estado inicial del slice
+    initialState: {
+      planoActual: null, // Nombre del plano actual
+      authors: [],
+      byAuthor: {},
+      current: null,
+      status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+      error: null
+    },
   extraReducers: (builder) => {
     builder
       // fetchAuthors
