@@ -11,7 +11,7 @@ export default function LoginPage() {
     setError(null)
     try {
       // 1. Enviamos la petición
-      const response = await api.post('/auth/login', { username, password })
+      const response = await api.post('http://localhost:8080/auth/login', { username, password })
       
       // 2. Verificamos el código de estado HTTP
       if (response.status === 200) {
