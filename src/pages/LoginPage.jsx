@@ -10,11 +10,28 @@ export default function LoginPage() {
     e.preventDefault()
     setError(null)
     try {
-      const { data } = await api.post('/auth/login', { username, password })
-      localStorage.setItem('token', data.token)
-      alert('Login exitoso')
+      // 1. Enviamos la petición
+      const response = await api.post('/auth/login', { username, password })
+      
+      // 2. Verificamos el código de estado HTTP
+      if (response.status === 200) {
+        // Accedemos a la estructura: response.data (ApiResponse) -> data (TokenResponse)
+        const apiResponse = response.data;
+        const token = apiResponse.data.access_token; // El nombre exacto en tu Java es access_token
+        
+        localStorage.setItem('token', token);
+        alert('Login exitoso');
+        // Opcional: window.location.href = '/blueprints' 
+      }
+      
     } catch (e) {
-      setError('Credenciales inválidas o servidor no disponible')
+      // Si el error es 401, vendrá por aquí
+      if (e.response && e.response.status === 401) {
+        setError('Usuario o contraseña incorrectos');
+      } else {
+        setError('No se pudo conectar con el servidor');
+      }
+      console.error(e);
     }
   }
 
