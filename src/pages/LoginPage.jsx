@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import api from '../services/apiClient.js'
 
-export default function LoginPage() {
+export default function LoginPage({ darkMode }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -36,7 +36,7 @@ export default function LoginPage() {
   }
 
   return (
-    <form className="card" onSubmit={submit}>
+    <form className={`card ${darkMode ? 'bg-dark text-light' : ''}`} onSubmit={submit}>
       <h2 style={{ marginTop: 0 }}>Login</h2>
       <div className="grid cols-2">
         <div>

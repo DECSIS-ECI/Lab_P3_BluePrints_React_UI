@@ -20,6 +20,13 @@ const apiclient = {
     const response = await api.post('/v1/blueprints', blueprint)
     return response.data.data || blueprint
   },
+
+  // Agrega un único punto a un blueprint existente
+  // PUT /blueprints/{author}/{bpname}/points → body: { x, y }
+  async addPoint(author, bpname, point) {
+    const response = await api.put(`/v1/blueprints/${author}/${bpname}/points`, point)
+    return response.data
+  },
 }
 
 export default apiclient

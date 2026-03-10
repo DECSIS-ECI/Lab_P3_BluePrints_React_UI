@@ -1,8 +1,8 @@
+
 import '@testing-library/jest-dom'
 
-// ---- Canvas mock para jsdom ----
-if (!HTMLCanvasElement.prototype.getContext) {
-  HTMLCanvasElement.prototype.getContext = () => {
+// ---- Canvas mock para jsdom (override incondicional porque jsdom ya define getContext pero lanza error) ----
+HTMLCanvasElement.prototype.getContext = () => {
     const noop = () => {}
     return {
       canvas: {},
@@ -34,5 +34,4 @@ if (!HTMLCanvasElement.prototype.getContext) {
       getLineDash: () => [],
       setLineDash: noop,
     }
-  }
 }
