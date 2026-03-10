@@ -159,7 +159,7 @@ export default function BlueprintsPage() {
                       </td>
                       <td style={{ padding: '8px', borderBottom: '1px solid #1f2937' }}>
                         <button 
-                          className="btn" 
+                          className="btn btn-success btn-lg shadow" 
                           onClick={() => openBlueprint(bp)}
                           disabled={status === 'loading'}
                         >
