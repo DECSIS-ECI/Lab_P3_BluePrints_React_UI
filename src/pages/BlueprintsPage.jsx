@@ -8,7 +8,7 @@ import {
 } from '../features/blueprints/blueprintsSlice.js'
 import BlueprintCanvas from '../components/BlueprintCanvas.jsx'
 
-export default function BlueprintsPage() {
+export default function BlueprintsPage({ darkMode }) {
   const dispatch = useDispatch()
   const { byAuthor, current, status, error } = useSelector((s) => s.blueprints)
   const [authorInput, setAuthorInput] = useState('')
@@ -64,7 +64,7 @@ export default function BlueprintsPage() {
   return (
     <div className="grid" style={{ gridTemplateColumns: '1.1fr 1.4fr', gap: 24 }}>
       <section className="grid" style={{ gap: 16 }}>
-        <div className="card">
+        <div className={`card ${darkMode ? 'bg-dark text-light' : ''}`}>
           <h2 style={{ marginTop: 0 }}>Blueprints</h2>
           
           {/* Mostrar error de autenticación si existe */}
@@ -100,7 +100,7 @@ export default function BlueprintsPage() {
           </div>
         </div>
 
-        <div className="card">
+        <div className={`card ${darkMode ? 'bg-dark text-light' : ''}`}>
           <h3 style={{ marginTop: 0 }}>
             {selectedAuthor ? `${selectedAuthor}'s blueprints:` : 'Results'}
           </h3>
@@ -151,9 +151,9 @@ export default function BlueprintsPage() {
         </div>
       </section>
 
-      <section className="card">
+      <section className={`card ${darkMode ? 'bg-dark text-light' : ''}`}>
         <h3 style={{ marginTop: 0 }}>Current blueprint: {current?.name || '—'}</h3>
-        <BlueprintCanvas points={current?.points || []} />
+        <BlueprintCanvas points={current?.points || []} darkMode={darkMode} />
       </section>
     </div>
   )

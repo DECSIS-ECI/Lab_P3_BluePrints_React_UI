@@ -7,12 +7,12 @@ describe('BlueprintForm', () => {
     const onSubmit = vi.fn()
     render(<BlueprintForm onSubmit={onSubmit} />)
 
-    fireEvent.change(screen.getByLabelText(/Autor/i), { target: { value: 'john' } })
-    fireEvent.change(screen.getByLabelText(/Nombre/i), { target: { value: 'house' } })
-    fireEvent.change(screen.getByLabelText(/Puntos/i), {
+    fireEvent.change(screen.getByPlaceholderText('juan.perez'), { target: { value: 'john' } })
+    fireEvent.change(screen.getByPlaceholderText('mi-dibujo'), { target: { value: 'house' } })
+    fireEvent.change(screen.getAllByRole('textbox')[2], {
       target: { value: '[{"x":1,"y":2}]' },
     })
-    fireEvent.submit(screen.getByText(/Guardar/i))
+    fireEvent.click(screen.getByRole('button', { name: /Crear/i }))
 
     expect(onSubmit).toHaveBeenCalledWith({
       author: 'john',

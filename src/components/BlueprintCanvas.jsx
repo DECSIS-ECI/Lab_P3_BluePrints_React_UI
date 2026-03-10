@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-export default function BlueprintCanvas({ points = [], width = 520, height = 360 }) {
+export default function BlueprintCanvas({ points = [], width = 520, height = 360, darkMode }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -45,6 +45,7 @@ export default function BlueprintCanvas({ points = [], width = 520, height = 360
 
   return (
       <div
+        className={darkMode ? 'bg-dark' : ''}
         style={{
           width: '100%',
           aspectRatio: `${width} / ${height}`,
