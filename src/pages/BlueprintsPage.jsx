@@ -118,46 +118,20 @@ export default function BlueprintsPage() {
           
           {!!items.length && (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
+              <table className="table table-striped table-bordered align-middle">
+                <thead className="table-dark">
                   <tr>
-                    <th
-                      style={{
-                        textAlign: 'left',
-                        padding: '8px',
-                        borderBottom: '1px solid #334155',
-                      }}
-                    >
-                      Blueprint name
-                    </th>
-                    <th
-                      style={{
-                        textAlign: 'right',
-                        padding: '8px',
-                        borderBottom: '1px solid #334155',
-                      }}
-                    >
-                      Number of points
-                    </th>
-                    <th style={{ padding: '8px', borderBottom: '1px solid #334155' }}></th>
+                    <th>Blueprint name</th>
+                    <th className="text-end">Number of points</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((bp) => (
                     <tr key={bp.name}>
-                      <td style={{ padding: '8px', borderBottom: '1px solid #1f2937' }}>
-                        {bp.name}
-                      </td>
-                      <td
-                        style={{
-                          padding: '8px',
-                          textAlign: 'right',
-                          borderBottom: '1px solid #1f2937',
-                        }}
-                      >
-                        {bp.points?.length || 0}
-                      </td>
-                      <td style={{ padding: '8px', borderBottom: '1px solid #1f2937' }}>
+                      <td>{bp.name}</td>
+                      <td className="text-end">{bp.points?.length || 0}</td>
+                      <td>
                         <button 
                           className="btn btn-success btn-lg shadow" 
                           onClick={() => openBlueprint(bp)}
