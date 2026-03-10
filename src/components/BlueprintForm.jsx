@@ -1,18 +1,31 @@
 import { useState } from 'react'
+import InteractiveCanvas from './InteractiveCanvas.jsx'
 
 export default function BlueprintForm({ onSubmit }) {
   const [author, setAuthor] = useState('')
   const [name, setName] = useState('')
-  const [pointsJSON, setPointsJSON] = useState('[{"x":10,"y":10},{"x":40,"y":60}]')
+  const [points, setPoints] = useState([{ x: 10, y: 10 }, { x: 40, y: 60 }])
+  const [pointsInput, setPointsInput] = useState(JSON.stringify(points))
+  const [error, setError] = useState('')
+
+  // Sincroniza input editable con puntos
+  useState(() => {
+    setPointsInput(JSON.stringify(points))
+  }, [points])
 
   const handle = (e) => {
     e.preventDefault()
-    try {
-      const points = JSON.parse(pointsJSON)
-      onSubmit({ author, name, points })
-    } catch (e) {
-      alert('JSON de puntos inválido')
+    let parsedPoints = points
+    if (pointsInput !== JSON.stringify(points)) {
+      try {
+        parsedPoints = JSON.parse(pointsInput)
+        setError('')
+      } catch {
+        setError('Formato de puntos inválido (JSON)')
+        return
+      }
     }
+    onSubmit({ author, name, points: parsedPoints })
   }
 
   return (
@@ -38,17 +51,23 @@ export default function BlueprintForm({ onSubmit }) {
             />
         </div>
       </div>
-        <div className="mb-3">
-          <label className="form-label">Puntos (JSON)</label>
-          <textarea
-            className="form-control"
-            rows="5"
-            value={pointsJSON}
-            onChange={(e) => setPointsJSON(e.target.value)}
-          />
-        </div>
+      <div className="mb-3">
+        <label className="form-label">Lienzo: haz click para agregar puntos</label>
+        <InteractiveCanvas points={points} setPoints={setPoints} />
+      </div>
+      <div className="mb-3">
+        <label className="form-label">Puntos (JSON)</label>
+        <input
+          className="form-control"
+          rows="5"
+          value={pointsInput}
+          onChange={e => setPointsInput(e.target.value)}
+          placeholder="Puntos JSON"
+        />
+        {error && <div style={{ color: '#f87171', fontWeight: 600, marginTop: 4 }}>{error}</div>}
+      </div>
       <div style={{ marginTop: 12 }}>
-          <button className="btn btn-primary">Crear</button>
+        <button className="btn btn-primary">Guardar</button>
       </div>
     </form>
   )

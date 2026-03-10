@@ -44,4 +44,19 @@ describe('BlueprintsPage', () => {
 
     expect(spy).toHaveBeenCalledWith({ type: 'blueprints/fetchByAuthor', payload: 'JohnConnor' })
   })
+
+    it('muestra banner de error y botón Reintentar', () => {
+      const store = makeStore({ error: 'Error de red' })
+      render(
+        <Provider store={store}>
+          <BlueprintsPage />
+        </Provider>,
+      )
+      expect(screen.getByText('Error de red')).toBeInTheDocument()
+      const retryBtn = screen.getByRole('button', { name: /Reintentar/i })
+      expect(retryBtn).toBeInTheDocument()
+      expect(retryBtn).not.toBeDisabled()
+    })
+
+
 })
