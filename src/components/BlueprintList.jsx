@@ -26,23 +26,27 @@ export default function BlueprintList({ items = [], onSelect }) {
   };
 
   return (
-    <div>
-      <h2>
+    <div className="container mt-4">
+      <h2 className="mb-4">
         Plano actual: {nombrePlano ? nombrePlano : 'Ninguno seleccionado'}
       </h2>
-      <div className="grid">
+      <div className="row">
         {items.map((bp) => (
-          <div key={bp.name} className="card">
-            <h3 style={{ marginTop: 0 }}>{bp.name}</h3>
-            <p>
-              <strong>Autor:</strong> {bp.author}
-            </p>
-            <p>
-              <strong>Puntos:</strong> {bp.points ? bp.points.length : 0}
-            </p>
-            <button className="btn primary" onClick={() => seleccionarPlano(bp)}>
-              Ver detalle
-            </button>
+          <div key={bp.name} className="col-md-4 mb-4">
+            <div className="card h-100 shadow-sm">
+              <div className="card-body">
+                <h5 className="card-title">{bp.name}</h5>
+                <p className="card-text">
+                  <strong>Autor:</strong> {bp.author}
+                </p>
+                <p className="card-text">
+                  <strong>Puntos:</strong> {bp.points ? bp.points.length : 0}
+                </p>
+                <button className="btn btn-success btn-lg shadow" onClick={() => seleccionarPlano(bp)}>
+                  Ver detalle
+                </button>
+              </div>
+            </div>
           </div>
         ))}
       </div>

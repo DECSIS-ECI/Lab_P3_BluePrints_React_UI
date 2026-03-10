@@ -21,34 +21,34 @@ export default function BlueprintForm({ onSubmit }) {
       <div className="grid cols-2">
         <div>
           <label>Autor</label>
-          <input
-            className="input"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-            placeholder="juan.perez"
-          />
+            <input
+              className="form-control"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              placeholder="juan.perez"
+            />
         </div>
         <div>
           <label>Nombre</label>
-          <input
-            className="input"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="mi-dibujo"
-          />
+            <input
+              className="form-control"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="mi-dibujo"
+            />
         </div>
       </div>
+        <div className="mb-3">
+          <label className="form-label">Puntos (JSON)</label>
+          <textarea
+            className="form-control"
+            rows="5"
+            value={pointsJSON}
+            onChange={(e) => setPointsJSON(e.target.value)}
+          />
+        </div>
       <div style={{ marginTop: 12 }}>
-        <label>Puntos (JSON)</label>
-        <textarea
-          className="input"
-          rows="5"
-          value={pointsJSON}
-          onChange={(e) => setPointsJSON(e.target.value)}
-        />
-      </div>
-      <div style={{ marginTop: 12 }}>
-        <button className="btn primary">Guardar</button>
+          <button className="btn btn-primary">Crear</button>
       </div>
     </form>
   )
