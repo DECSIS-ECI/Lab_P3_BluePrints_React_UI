@@ -4,10 +4,11 @@ import {
   fetchAuthors,
   fetchByAuthor,
   fetchBlueprint,
+  updateBlueprint,
+  deleteBlueprint,
   clearError,
 } from '../features/blueprints/blueprintsSlice.js'
 import InteractiveCanvas from '../components/InteractiveCanvas.jsx'
-import blueprintsService from '../services/blueprintsService.js'
 
 export default function BlueprintsPage({ darkMode }) {
   const dispatch = useDispatch()
@@ -16,10 +17,10 @@ export default function BlueprintsPage({ darkMode }) {
   const [selectedAuthor, setSelectedAuthor] = useState('')
   const [authError, setAuthError] = useState(null)
   const [editPoints, setEditPoints] = useState([])
-  const [originalPointsCount, setOriginalPointsCount] = useState(0)
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [deleteSuccess, setDeleteSuccess] = useState('')
   const items = byAuthor[selectedAuthor] || []
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function BlueprintsPage({ darkMode }) {
       // Redirigir después de 2 segundos
       const timer = setTimeout(() => {
         localStorage.removeItem('token')
-        window.location.href = '/login'
+        globalThis.location.href = '/login'
       }, 2000)
       
       return () => clearTimeout(timer)
@@ -66,47 +67,65 @@ export default function BlueprintsPage({ darkMode }) {
   useEffect(() => {
     if (current?.points) {
       setEditPoints([...current.points])
-      setOriginalPointsCount(current.points.length)
     } else {
       setEditPoints([])
-      setOriginalPointsCount(0)
     }
     setSaved(false)
     setSaveError(null)
   }, [current])
 
   const handleSave = async () => {
-    // Solo enviar los puntos nuevos (agregados con click)
-    const newPoints = editPoints.slice(originalPointsCount)
-    if (!newPoints.length) {
+    if (!current) {
+      return
+    }
+
+    if (JSON.stringify(current.points || []) === JSON.stringify(editPoints)) {
       setSaved(true)
       return
     }
+
     setSaving(true)
     setSaveError(null)
     setSaved(false)
+    setDeleteSuccess('')
+
     try {
-      for (const point of newPoints) {
-        await blueprintsService.addPoint(current.author, current.name, point)
-      }
+      await dispatch(
+        updateBlueprint({
+          author: current.author,
+          name: current.name,
+          blueprint: {
+            author: current.author,
+            name: current.name,
+            points: editPoints,
+          },
+        }),
+      ).unwrap()
       setSaved(true)
     } catch (err) {
-      const status = err.response?.status
-      if (status === 404) {
-        setSaveError('Blueprint no encontrado en el servidor.')
-      } else if (status === 400) {
-        setSaveError('Datos inválidos. Verifica los puntos ingresados.')
-      } else if (status === 401) {
-        setSaveError('No tienes autorización para modificar este blueprint.')
-      } else {
-        setSaveError('Error al guardar. Intenta de nuevo.')
-      }
+      setSaveError(err || 'Error al actualizar el blueprint. Intenta de nuevo.')
     } finally {
       setSaving(false)
     }
   }
 
-  const handleKeyPress = (e) => {
+  const handleDelete = async (bp) => {
+    const confirmed = globalThis.confirm(`Deseas eliminar el blueprint ${bp.name}?`)
+    if (!confirmed) return
+
+    setDeleteSuccess('')
+    setSaved(false)
+    setSaveError(null)
+
+    try {
+      await dispatch(deleteBlueprint({ author: bp.author, name: bp.name })).unwrap()
+      setDeleteSuccess(`Blueprint ${bp.name} eliminado correctamente`)
+    } catch (err) {
+      setSaveError(err || 'Error al eliminar el blueprint. Intenta de nuevo.')
+    }
+  }
+
+  const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       getBlueprints()
     }
@@ -138,7 +157,7 @@ export default function BlueprintsPage({ darkMode }) {
               placeholder="Author"
               value={authorInput}
               onChange={(e) => setAuthorInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyDown}
               disabled={status === 'loading' || authError}
             />
             <button 
@@ -189,7 +208,7 @@ export default function BlueprintsPage({ darkMode }) {
                   <tr>
                     <th>Blueprint name</th>
                     <th className="text-end">Number of points</th>
-                    <th></th>
+                    <th className="text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -198,13 +217,29 @@ export default function BlueprintsPage({ darkMode }) {
                       <td>{bp.name}</td>
                       <td className="text-end">{bp.points?.length || 0}</td>
                       <td>
-                        <button 
-                          className="btn btn-success btn-lg shadow" 
-                          onClick={() => openBlueprint(bp)}
-                          disabled={status === 'loading'}
-                        >
-                          Open
-                        </button>
+                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            className="btn btn-success btn-lg shadow"
+                            onClick={() => openBlueprint(bp)}
+                            disabled={status === 'loading'}
+                          >
+                            Open
+                          </button>
+                          <button
+                            className="btn btn-outline-primary btn-lg"
+                            onClick={() => openBlueprint(bp)}
+                            disabled={status === 'loading'}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-danger btn-lg"
+                            onClick={() => handleDelete(bp)}
+                            disabled={status === 'loading'}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -227,8 +262,9 @@ export default function BlueprintsPage({ darkMode }) {
             <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>Haz click en el lienzo para agregar puntos</p>.
             <InteractiveCanvas points={editPoints} setPoints={(pts) => { setEditPoints(pts); setSaved(false) }} darkMode={darkMode} />
             <div>
-              <label style={{ fontWeight: 600, fontSize: 13 }}>Puntos (JSON)</label>
+              <label htmlFor="points-json" style={{ fontWeight: 600, fontSize: 13 }}>Puntos (JSON)</label>
               <textarea
+                id="points-json"
                 className="form-control"
                 rows="4"
                 readOnly
@@ -237,10 +273,13 @@ export default function BlueprintsPage({ darkMode }) {
               />
             </div>
             <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-              {saving ? 'Guardando...' : 'Guardar'}
+              {saving ? 'Guardando...' : 'Guardar cambios'}
             </button>
             {saved && (
-              <p style={{ color: '#22c55e', fontWeight: 600, margin: 0 }}>Plano actualizado correctamente</p>
+              <p style={{ color: '#22c55e', fontWeight: 600, margin: 0 }}>Blueprint actualizado correctamente</p>
+            )}
+            {deleteSuccess && (
+              <p style={{ color: '#22c55e', fontWeight: 600, margin: 0 }}>{deleteSuccess}</p>
             )}
             {saveError && (
               <p style={{ color: '#f87171', fontWeight: 600, margin: 0 }}>{saveError}</p>
