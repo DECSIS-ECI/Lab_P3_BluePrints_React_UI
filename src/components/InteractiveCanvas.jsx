@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react'
 
-export default function InteractiveCanvas({ points, setPoints, width = 520, height = 360, darkMode }) {
+export default function InteractiveCanvas({ points, setPoints, width = 520, height = 360, darkMode, deleteMode = false }) {
   const ref = useRef(null)
 
   // Dibuja igual que BlueprintCanvas
@@ -51,7 +51,31 @@ export default function InteractiveCanvas({ points, setPoints, width = 520, heig
     const rect = ref.current.getBoundingClientRect()
     const x = Math.round((e.clientX - rect.left) * (ref.current.width / rect.width))
     const y = Math.round((e.clientY - rect.top) * (ref.current.height / rect.height))
-    setPoints([...points, { x, y }])
+    
+    if (deleteMode) {
+      // Buscar el punto más cercano al click
+      let closestIndex = -1
+      let closestDistance = 15 // Radio de detección
+      
+      for (let i = 0; i < points.length; i++) {
+        const dx = points[i].x - x
+        const dy = points[i].y - y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        
+        if (distance < closestDistance) {
+          closestDistance = distance
+          closestIndex = i
+        }
+      }
+      
+      // Si encontramos un punto cercano, borrarlo
+      if (closestIndex !== -1) {
+        setPoints(points.filter((_, i) => i !== closestIndex))
+      }
+    } else {
+      // Modo agregar puntos
+      setPoints([...points, { x, y }])
+    }
   }
 
   return (
@@ -76,7 +100,7 @@ export default function InteractiveCanvas({ points, setPoints, width = 520, heig
           height: '100%',
           borderRadius: 16,
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-          cursor: 'crosshair',
+          cursor: deleteMode ? 'pointer' : 'crosshair',
         }}
         onClick={handleClick}
       />

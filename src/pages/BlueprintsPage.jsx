@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchAuthors,
   fetchByAuthor,
@@ -7,21 +7,30 @@ import {
   updateBlueprint,
   deleteBlueprint,
   clearError,
-} from '../features/blueprints/blueprintsSlice.js'
-import InteractiveCanvas from '../components/InteractiveCanvas.jsx'
+} from '../features/blueprints/blueprintsSlice.js';
+import InteractiveCanvas from '../components/InteractiveCanvas.jsx';
+import blueprintsService from '../services/blueprintsService.js';
 
 export default function BlueprintsPage({ darkMode }) {
-  const dispatch = useDispatch()
-  const { byAuthor, current, status, error } = useSelector((s) => s.blueprints)
-  const [authorInput, setAuthorInput] = useState('')
-  const [selectedAuthor, setSelectedAuthor] = useState('')
-  const [authError, setAuthError] = useState(null)
-  const [editPoints, setEditPoints] = useState([])
-  const [saved, setSaved] = useState(false)
-  const [saveError, setSaveError] = useState(null)
-  const [saving, setSaving] = useState(false)
-  const [deleteSuccess, setDeleteSuccess] = useState('')
-  const items = byAuthor[selectedAuthor] || []
+  const dispatch = useDispatch();
+  const { byAuthor, current, status, error } = useSelector((s) => s.blueprints);
+  const [authorInput, setAuthorInput] = useState('');
+  const [selectedAuthor, setSelectedAuthor] = useState('');
+  const [authError, setAuthError] = useState(null);
+  const [editPoints, setEditPoints] = useState([]);
+  const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deleteSuccess, setDeleteSuccess] = useState('');
+  const items = byAuthor[selectedAuthor] || [];
+
+  // Estado para crear blueprint
+  const [createMode, setCreateMode] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createError, setCreateError] = useState('');
+  const [createSaving, setCreateSaving] = useState(false);
+  const [createSuccess, setCreateSuccess] = useState('');
+  const [deleteMode, setDeleteMode] = useState(false);
 
   useEffect(() => {
     dispatch(fetchAuthors())
@@ -63,16 +72,23 @@ export default function BlueprintsPage({ darkMode }) {
     dispatch(fetchBlueprint({ author: bp.author, name: bp.name }))
   }
 
-  // Cuando cambia el plano actual, sincroniza los puntos editables
   useEffect(() => {
-    if (current?.points) {
-      setEditPoints([...current.points])
-    } else {
-      setEditPoints([])
+    if (createMode) {
+      setEditPoints([]);
+      setSaved(false);
+      setSaveError(null);
+      setDeleteMode(false);
+      return;
     }
-    setSaved(false)
-    setSaveError(null)
-  }, [current])
+    if (current?.points) {
+      setEditPoints([...current.points]);
+    } else {
+      setEditPoints([]);
+    }
+    setSaved(false);
+    setSaveError(null);
+    setDeleteMode(false);
+  }, [current, createMode]);
 
   const handleSave = async () => {
     if (!current) {
@@ -136,7 +152,6 @@ export default function BlueprintsPage({ darkMode }) {
       <section className="grid" style={{ gap: 16 }}>
         <div className={`card ${darkMode ? 'bg-dark text-light' : ''}`}>
           <h2 style={{ marginTop: 0 }}>Blueprints</h2>
-          
           {/* Mostrar error de autenticación si existe */}
           {authError && (
             <div style={{ 
@@ -151,23 +166,42 @@ export default function BlueprintsPage({ darkMode }) {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 12 }}>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
             <input
               className="input"
-              placeholder="Author"
+              placeholder="Nombre del autor"
               value={authorInput}
               onChange={(e) => setAuthorInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={status === 'loading' || authError}
+              disabled={status === 'loading' || authError || createMode}
             />
             <button 
               className="btn primary" 
               onClick={getBlueprints}
-              disabled={status === 'loading' || authError}
+              disabled={status === 'loading' || authError || createMode}
             >
               {status === 'loading' ? 'Buscando...' : 'Get blueprints'}
             </button>
+            <button
+              className="btn btn-success"
+              onClick={() => {
+                if (!authorInput.trim()) {
+                  setCreateError('Ingrese el nombre del autor');
+                  return;
+                }
+                setCreateError('');
+                setCreateMode(true);
+                setCreateName('');
+                setCreateSuccess('');
+                setEditPoints([]);
+              }}
+              disabled={createMode}
+            >Crear</button>
           </div>
+          {createError && <div style={{ color: '#b91c1c', marginBottom: 8 }}>{createError}</div>}
+          {createSuccess && <div style={{ color: '#22c55e', marginBottom: 8 }}>{createSuccess}</div>}
+
+
         </div>
 
         <div className={`card ${darkMode ? 'bg-dark text-light' : ''}`}>
@@ -217,23 +251,23 @@ export default function BlueprintsPage({ darkMode }) {
                       <td>{bp.name}</td>
                       <td className="text-end">{bp.points?.length || 0}</td>
                       <td>
-                        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'nowrap' }}>
                           <button
-                            className="btn btn-success btn-lg shadow"
+                            className="btn btn-success btn-sm"
                             onClick={() => openBlueprint(bp)}
                             disabled={status === 'loading'}
                           >
                             Open
                           </button>
                           <button
-                            className="btn btn-outline-primary btn-lg"
+                            className="btn btn-outline-primary btn-sm"
                             onClick={() => openBlueprint(bp)}
                             disabled={status === 'loading'}
                           >
                             Edit
                           </button>
                           <button
-                            className="btn btn-danger btn-lg"
+                            className="btn btn-danger btn-sm"
                             onClick={() => handleDelete(bp)}
                             disabled={status === 'loading'}
                           >
@@ -253,14 +287,92 @@ export default function BlueprintsPage({ darkMode }) {
       </section>
 
       <section className={`card ${darkMode ? 'bg-dark text-light' : ''}`} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <h3 style={{ marginTop: 0 }}>Current blueprint: {current?.name || '—'}</h3>
+        <h3 style={{ marginTop: 0 }}>
+          {createMode ? 'Crear nuevo blueprint' : `Current blueprint: ${current?.name || '—'}`}
+        </h3>
 
-        {!current ? (
+        {createMode ? (
+          <>
+            <input
+              className="input"
+              placeholder="Nombre del blueprint"
+              value={createName}
+              onChange={e => setCreateName(e.target.value)}
+              style={{ marginBottom: 8 }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
+                {deleteMode ? 'Haz click en un punto para borrarlo' : 'Haz click en el lienzo para agregar puntos'}
+              </p>
+              <button
+                className={`btn ${deleteMode ? 'btn-warning' : 'btn-secondary'}`}
+                onClick={() => setDeleteMode(!deleteMode)}
+              >
+                {deleteMode ? 'Agregar puntos' : 'Borrar puntos'}
+              </button>
+            </div>
+            {deleteMode && <p style={{ margin: 0, fontSize: 12, color: '#f59e0b', marginBottom: 8 }}>Tip: Acerca el cursor a un punto para seleccionarlo</p>}
+            <InteractiveCanvas points={editPoints} setPoints={setEditPoints} darkMode={darkMode} deleteMode={deleteMode} />
+            <div>
+              <label htmlFor="points-json" style={{ fontWeight: 600, fontSize: 13 }}>Puntos (JSON)</label>
+              <textarea
+                id="points-json"
+                className="form-control"
+                rows="4"
+                readOnly
+                value={JSON.stringify(editPoints)}
+                style={{ fontFamily: 'monospace', fontSize: 12, marginTop: 4 }}
+              />
+            </div>
+            <button
+              className="btn btn-primary"
+              onClick={async () => {
+                if (!createName.trim()) {
+                  setCreateError('Ingrese el nombre del blueprint');
+                  return;
+                }
+                setCreateError('');
+                setCreateSaving(true);
+                try {
+                  await blueprintsService.create({
+                    author: authorInput,
+                    name: createName,
+                    points: editPoints.length ? editPoints : [{ x: 0, y: 0 }],
+                  });
+                  setCreateSuccess('Blueprint creado correctamente');
+                  setCreateMode(false);
+                  setCreateName('');
+                  setEditPoints([]);
+                  setSelectedAuthor(authorInput);
+                  dispatch(fetchByAuthor(authorInput));
+                } catch (e) {
+                  setCreateError('Error al guardar el blueprint');
+                } finally {
+                  setCreateSaving(false);
+                }
+              }}
+              disabled={createSaving}
+            >{createSaving ? 'Guardando...' : 'Guardar'}</button>
+            {createError && <div style={{ color: '#b91c1c', marginTop: 8 }}>{createError}</div>}
+            {createSuccess && <div style={{ color: '#22c55e', marginTop: 8 }}>{createSuccess}</div>}
+          </>
+        ) : !current ? (
           <p style={{ color: '#94a3b8', fontStyle: 'italic' }}>Selecciona un plano</p>
         ) : (
           <>
-            <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>Haz click en el lienzo para agregar puntos</p>.
-            <InteractiveCanvas points={editPoints} setPoints={(pts) => { setEditPoints(pts); setSaved(false) }} darkMode={darkMode} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <p style={{ margin: 0, fontSize: 13, color: '#94a3b8' }}>
+                {deleteMode ? 'Haz click en un punto para borrarlo' : 'Haz click en el lienzo para agregar puntos'}
+              </p>
+              <button
+                className={`btn ${deleteMode ? 'btn-warning' : 'btn-secondary'}`}
+                onClick={() => setDeleteMode(!deleteMode)}
+              >
+                {deleteMode ? 'Agregar puntos' : 'Borrar puntos'}
+              </button>
+            </div>
+            {deleteMode && <p style={{ margin: 0, fontSize: 12, color: '#f59e0b', marginBottom: 8 }}>Tip: Acerca el cursor a un punto para seleccionarlo</p>}
+            <InteractiveCanvas points={editPoints} setPoints={(pts) => { setEditPoints(pts); setSaved(false) }} darkMode={darkMode} deleteMode={deleteMode} />
             <div>
               <label htmlFor="points-json" style={{ fontWeight: 600, fontSize: 13 }}>Puntos (JSON)</label>
               <textarea
