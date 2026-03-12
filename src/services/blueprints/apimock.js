@@ -66,24 +66,6 @@ const apimock = {
     mockBlueprints.push(clone(blueprint))
     return clone(blueprint)
   },
-
-  async update(author, name, blueprint) {
-    const index = mockBlueprints.findIndex((item) => item.author === author && item.name === name)
-    if (index < 0) {
-      throw buildHttpError(404, `No se encontro el blueprint: ${name}`)
-    }
-    mockBlueprints[index] = clone(blueprint)
-    return clone(mockBlueprints[index])
-  },
-
-  async remove(author, name) {
-    const index = mockBlueprints.findIndex((item) => item.author === author && item.name === name)
-    if (index < 0) {
-      throw buildHttpError(404, `No se encontro el blueprint: ${name}`)
-    }
-    mockBlueprints.splice(index, 1)
-    return { author, name }
-  },
 }
 
 export default apimock
