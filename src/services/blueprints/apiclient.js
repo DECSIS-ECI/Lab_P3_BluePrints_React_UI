@@ -21,6 +21,16 @@ const apiclient = {
     return response.data.data || blueprint
   },
 
+  async update(author, name, blueprint) {
+    const response = await api.put(`/v1/blueprints/${author}/${name}`, blueprint)
+    return response.data.data || blueprint
+  },
+
+  async remove(author, name) {
+    await api.delete(`/v1/blueprints/${author}/${name}`)
+    return { author, name }
+  },
+
   // Agrega un único punto a un blueprint existente
   // PUT /blueprints/{author}/{bpname}/points → body: { x, y }
   async addPoint(author, bpname, point) {
